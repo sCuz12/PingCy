@@ -8,14 +8,14 @@ monitoring:
 
 targets:
   - name: "gov.cy"
-    url: "https://cge.cyprus.gov.cy/cylogin/core/login?"
+    url: "https://cge.cyprus.gov.cy/"
     method: "GET"
     interval: "30s"
     timeout: "5s"
     expected_status: 200
 
   - name: "cyprus-post"
-    url: "https://www.cypruspost.post/el/login"
+    url: "https://www.cypruspost.post"
     method: "GET"
     interval: "60s"
     timeout: "5s"
@@ -27,6 +27,11 @@ targets:
     timeout: "5s"
   - name : "GESY Providers Portal"
     url : "https://providers.gesy.org.cy/"
+    method: "GET"
+    interval: "60s"
+    timeout: "5s"
+  - name : "Cyprus Police"
+    url : "https://www.police.gov.cy/"
     method: "GET"
     interval: "60s"
     timeout: "5s"
