@@ -1,0 +1,13 @@
+Scheduler goroutines
+        │
+        ▼
+     jobsCh  ──►  Worker Pool  ──►  resultsCh
+                                       │
+                                       ▼
+                                 Aggregator
+                                       │
+                                       ▼
+                                   eventsCh
+                                       │
+                                       ▼
+                                Logger / Notifier
