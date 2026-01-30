@@ -14,10 +14,6 @@ type StateDTO = {
   total_fails: number;
 };
 
-type StatusResponse = {
-  All: StateDTO[];
-  ByName: Record<string, StateDTO>;
-};
 
 function classNames(...xs: Array<string | false | undefined>) {
   return xs.filter(Boolean).join(" ");

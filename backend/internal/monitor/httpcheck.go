@@ -44,16 +44,12 @@ func CheckOnce(ctx context.Context, client *http.Client, t Target) CheckResult {
 		return res
 	}
 	defer resp.Body.Close()
-	if t.Name == "cyprus-post" {
-		fmt.Println(resp)
-	}
+	
 	res.StatusCode = resp.StatusCode
 	res.Latency = time.Since(start)
 
 	// 1) Status code validation
 	if t.ExpectedStatus != 0 && resp.StatusCode != t.ExpectedStatus {
-		// For monitoring, many people treat 2xx/3xx as UP.
-		// Your spec says "expectedStatus" optional, so if set, enforce it.
 		res.Up = false
 		res.Validation = fmt.Sprintf("unexpected status: got %d want %d", resp.StatusCode, t.ExpectedStatus)
 		return res

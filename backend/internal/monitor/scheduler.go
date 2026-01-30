@@ -23,7 +23,7 @@ func StartSchedulers(
 		}
 
 		go func(target Target) {
-			// Send an immediate first check so you don't wait for the first tick.
+			// Send an immediate first check
 			enqueueJob(ctx, jobsCh, target)
 
 			ticker := time.NewTicker(target.Interval)

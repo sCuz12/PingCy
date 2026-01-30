@@ -28,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Root context for the whole app (later you’ll cancel this on SIGINT)
+	// Root context for the whole app
 	ctx := context.Background()
 
 	client := monitor.NewHTTPClient(monitor.HTTPClientConfig{
@@ -43,7 +43,6 @@ func main() {
 	jobsCh := make(chan monitor.CheckJob, 200)
 	resultsCh := make(chan monitor.CheckResult, 200)
 	eventsCh := make(chan monitor.Event, 50)
-	_ = eventsCh // not used yet (MVP)
 
 	targetsToMonitor := toMonitorTargets(cfg.Targets)
 
@@ -72,6 +71,16 @@ func main() {
 			http.Error(w, "failed to encode status", http.StatusInternalServerError)
 			return
 		}
+	})
+	// Serve Vite build output from /app/web/dist
+	fs := http.FileServer(http.Dir("./web/dist"))
+
+	// Assets (Vite outputs /assets/*)
+	r.Handle("/assets/*", fs)
+
+	// SPA fallback: serve index.html for everything else that isn't an API route
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/dist/index.html")
 	})
 
 	fmt.Println(cfg)
