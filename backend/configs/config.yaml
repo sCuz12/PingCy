@@ -35,3 +35,8 @@ targets:
     method: "GET"
     interval: "60s"
     timeout: "5s"
+  - name : "SigmaLive"
+    url : "https://www.sigmalive.com/"
+    method: "GET"
+    interval: "60s"
+    timeout: "5s"
