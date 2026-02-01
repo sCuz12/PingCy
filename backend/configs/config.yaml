@@ -4,39 +4,42 @@ monitoring:
   workers: 8
   jobs_buffer: 200
   results_buffer: 200
-  user_agent: "CyprusStatusMonitor/0.1 (+contact: you@example.com)"
+  user_agent: "CyprusStatusMonitor/0.1"
 
 targets:
   - name: "gov.cy"
-    url: "https://cge.cyprus.gov.cy/"
+    url: "https://cge.cyprus.gov.cy"
     method: "GET"
     interval: "30s"
-    timeout: "5s"
+    timeout: "10s"
     expected_status: 200
-
   - name: "cyprus-post"
     url: "https://www.cypruspost.post"
     method: "GET"
     interval: "60s"
-    timeout: "5s"
-
+    timeout: "10s"
+    expected_status: 200
   - name : "GESY Beneficiaries Portal"
     url : "https://portal.gesy.org.cy/"
     method: "GET"
     interval: "60s"
-    timeout: "5s"
+    timeout: "10s"
+    expected_status: 200
   - name : "GESY Providers Portal"
     url : "https://providers.gesy.org.cy/"
     method: "GET"
     interval: "60s"
-    timeout: "5s"
+    timeout: "10s"
+    expected_status: 200
   - name : "Cyprus Police"
     url : "https://www.police.gov.cy/"
     method: "GET"
     interval: "60s"
-    timeout: "5s"
+    timeout: "10s"
+    expected_status: 200
   - name : "SigmaLive"
     url : "https://www.sigmalive.com/"
     method: "GET"
     interval: "60s"
-    timeout: "5s"
+    timeout: "10s"
+    expected_status: 200
