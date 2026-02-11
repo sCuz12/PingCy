@@ -13,33 +13,37 @@ targets:
     interval: "30s"
     timeout: "10s"
     expected_status: 200
-  - name: "cyprus-post"
-    url: "https://www.cypruspost.post"
-    method: "GET"
-    interval: "60s"
-    timeout: "10s"
-    expected_status: 200
-  - name : "GESY Beneficiaries Portal"
-    url : "https://portal.gesy.org.cy/"
-    method: "GET"
-    interval: "60s"
-    timeout: "10s"
-    expected_status: 200
-  - name : "GESY Providers Portal"
-    url : "https://providers.gesy.org.cy/"
-    method: "GET"
-    interval: "60s"
-    timeout: "10s"
-    expected_status: 200
-  - name : "Cyprus Police"
-    url : "https://www.police.gov.cy/"
-    method: "GET"
-    interval: "60s"
-    timeout: "10s"
-    expected_status: 200
   - name : "SigmaLive"
     url : "https://www.sigmalive.com/"
     method: "GET"
     interval: "60s"
     timeout: "10s"
     expected_status: 200
+  - name : "Philenews"
+    url : "https://in-cyprus.philenews.com/"
+    method: "GET"
+    interval: "60s"
+    timeout: "10s"
+    expected_status: 200
+  - name : "Cyprus Ministry of Education , Sport & Youth"
+    url : "https://www.moec.gov.cy/en/"
+    method: "GET"
+    interval: "60s"
+    timeout: "10s"
+    expected_status: 200
+  - name : "Department of Lands and Surveys"
+    url : "https://portal.dls.moi.gov.cy/en/"
+    method: "GET"
+    interval: "60s"
+    timeout: "10s"
+    expected_status: 200
+  - name : "Cyprus Public transportation"
+    url : "https://www.publictransport.com.cy/"
+    method: "GET"
+    interval: "60s"
+    timeout: "10s"
+    expected_status: 200
+  
+  
+
+
