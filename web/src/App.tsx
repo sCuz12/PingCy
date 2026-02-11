@@ -14,6 +14,22 @@ type StateDTO = {
   total_fails: number;
 };
 
+type UptimeItem = {
+  target: string;
+  window: string;
+  from: string;
+  total_checks: number;
+  total_up: number;
+  uptime_pct: number;
+};
+
+type UptimeResponse = {
+  from: string;
+  generated_at: string;
+  items: UptimeItem[];
+  window: string;
+};
+
 
 function classNames(...xs: Array<string | false | undefined>) {
   return xs.filter(Boolean).join(" ");
@@ -23,6 +39,19 @@ function formatMs(ms: number) {
   if (!Number.isFinite(ms)) return "—";
   if (ms < 1000) return `${ms} ms`;
   return `${(ms / 1000).toFixed(2)} s`;
+}
+
+function formatPct(pct?: number) {
+  if (pct === undefined || Number.isNaN(pct)) return "—";
+  if (pct === 100) return "100%";
+  return `${pct.toFixed(2)}%`;
+}
+
+function pctTone(pct: number) {
+  if (!Number.isFinite(pct)) return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (pct >= 99.5) return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+  if (pct >= 95) return "bg-amber-50 text-amber-800 ring-amber-200";
+  return "bg-rose-50 text-rose-800 ring-rose-200";
 }
 
 function StatusBadge({ up }: { up: boolean }) {
@@ -67,8 +96,10 @@ export default function App() {
   const [q, setQ] = useState("");
   const [onlyDown, setOnlyDown] = useState(false);
   const [err, setErr] = useState<string>("");
+  const [uptime, setUptime] = useState<UptimeResponse | null>(null);
+  const [uptimeErr, setUptimeErr] = useState<string>("");
 
-  async function load() {
+  async function loadStatus() {
     try {
       setErr("");
       const res = await fetch("/status", { cache: "no-store" });
@@ -83,21 +114,46 @@ export default function App() {
         : [];
       setData(items);
       setLastUpdated(new Date().toISOString());
-    } catch (e: any) {
-      setErr(e?.message ?? "Failed to load /status");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load /status";
+      setErr(msg);
+    }
+  }
+
+  async function loadUptime() {
+    try {
+      setUptimeErr("");
+      const res = await fetch("/uptime/all", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = (await res.json()) as UptimeResponse;
+      setUptime(json);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load /uptime/all";
+      setUptimeErr(msg);
     }
   }
 
   useEffect(() => {
-    load();
-    const t = setInterval(load, 10000);
-    return () => clearInterval(t);
+    loadStatus();
+    loadUptime();
+    const t = setInterval(loadStatus, 10000);
+    const u = setInterval(loadUptime, 60000);
+    return () => {
+      clearInterval(t);
+      clearInterval(u);
+    };
   }, []);
 
   const { upCount, downCount } = useMemo(() => {
     let up = 0,
       down = 0;
-    for (const it of data) it.up ? up++ : down++;
+    for (const it of data) {
+      if (it.up) {
+        up++;
+      } else {
+        down++;
+      }
+    }
     return { upCount: up, downCount: down };
   }, [data]);
 
@@ -144,7 +200,7 @@ export default function App() {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <button
-              onClick={load}
+              onClick={loadStatus}
               className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 active:bg-slate-950"
             >
               Refresh
@@ -164,6 +220,53 @@ export default function App() {
             label="Last updated (UTC)"
             value={lastUpdated ? lastUpdated.replace("T", " ").replace("Z", "") : "—"}
           />
+        </div>
+
+        {/* Uptime digest */}
+        <div className="mt-8 rounded-3xl bg-white/80 p-6 ring-1 ring-slate-200 backdrop-blur">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-slate-800">Uptime last 24h</div>
+              <div className="text-xs text-slate-500">
+                {uptime?.from ? `From ${uptime.from} to ${uptime.generated_at}` : "Window: 24h"}
+              </div>
+            </div>
+            <button
+              onClick={loadUptime}
+              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-slate-800 active:bg-slate-950"
+            >
+              Refresh uptime
+            </button>
+          </div>
+
+          {uptimeErr ? (
+            <div className="mt-4 rounded-2xl bg-rose-50 p-3 text-xs text-rose-800 ring-1 ring-rose-200">
+              {uptimeErr}
+            </div>
+          ) : null}
+
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {(uptime?.items ?? []).map((item) => (
+              <div
+                key={item.target}
+                className={
+                  "rounded-2xl px-4 py-3 ring-1 backdrop-blur " + pctTone(item.uptime_pct)
+                }
+              >
+                <div className="text-sm font-semibold text-slate-900">{item.target}</div>
+                <div className="mt-1 flex items-baseline gap-2 text-2xl font-bold text-slate-900">
+                  {formatPct(item.uptime_pct)}
+                  <span className="text-xs font-semibold text-slate-500">/ {item.window}</span>
+                </div>
+                <div className="mt-1 text-xs text-slate-600">
+                  Checks: {item.total_checks} • Up: {item.total_up}
+                </div>
+              </div>
+            ))}
+            {(uptime?.items?.length ?? 0) === 0 && !uptimeErr ? (
+              <div className="text-sm text-slate-500">No uptime data yet.</div>
+            ) : null}
+          </div>
         </div>
 
         {/* Controls */}

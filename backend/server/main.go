@@ -17,6 +17,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -35,7 +36,14 @@ func main() {
 		log.Fatal("DATABASE_URL env var is required")
 	}
 
-	dbpool, err := pgxpool.New(context.Background(), dbURL)
+	poolCfg, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		log.Fatalf("failed to parse db config: %v", err)
+	}
+	// Supabase/PgBouncer (transaction pooling) rejects prepared statements.
+	poolCfg.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+
+	dbpool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		log.Fatalf("failed to create db pool: %v", err)
 	}
@@ -97,6 +105,7 @@ func main() {
 
 	h := handlers.New(dbpool)
 	r.Get("/uptime", h.GetUptime)
+	r.Get("/uptime/all", h.GetUptimeAll)
 	// Serve Vite build output from /app/web/dist
 	fs := http.FileServer(http.Dir("./web/dist"))
 

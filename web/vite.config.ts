@@ -11,7 +11,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/status': 'http://localhost:8080',
-      '/healthz': 'http://localhost:8080'
+      '/healthz': 'http://localhost:8080',
+      '/uptime': 'http://localhost:8080'
     }
   }
 
