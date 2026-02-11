@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"cy-platforms-status-monitor/internal/config"
+	"cy-platforms-status-monitor/internal/handlers"
 	"cy-platforms-status-monitor/internal/monitor"
 	"cy-platforms-status-monitor/internal/snapshot"
 	"encoding/json"
@@ -93,6 +94,9 @@ func main() {
 			return
 		}
 	})
+
+	h := handlers.New(dbpool)
+	r.Get("/uptime", h.GetUptime)
 	// Serve Vite build output from /app/web/dist
 	fs := http.FileServer(http.Dir("./web/dist"))
 
