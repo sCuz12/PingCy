@@ -9,11 +9,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 const CONFIGS_PATH = "./configs/config.yaml"
@@ -22,6 +25,24 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	godotenv.Load(".env")
+
+	// Database: require DATABASE_URL and establish a pooled connection.
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL env var is required")
+	}
+
+	dbpool, err := pgxpool.New(context.Background(), dbURL)
+	if err != nil {
+		log.Fatalf("failed to create db pool: %v", err)
+	}
+	defer dbpool.Close()
+
+	if err := dbpool.Ping(context.Background()); err != nil {
+		log.Fatalf("database ping failed: %v", err)
+	}
 
 	cfg, err := config.Load(CONFIGS_PATH)
 	if err != nil {
@@ -49,7 +70,7 @@ func main() {
 	monitor.StartWorkers(ctx, cfg.Monitoring.Workers, client, jobsCh, resultsCh, &workerWg)
 	monitor.StartSchedulers(ctx, targetsToMonitor, jobsCh)
 
-	go monitor.Aggregator(ctx, resultsCh, eventsCh)
+	go monitor.Aggregator(ctx, resultsCh, eventsCh, dbpool)
 
 	go func() {
 		for e := range eventsCh {
@@ -66,7 +87,7 @@ func main() {
 	r.Get("/status", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		ss := snapshot.Get().All
-		
+
 		if err := json.NewEncoder(w).Encode(ss); err != nil {
 			http.Error(w, "failed to encode status", http.StatusInternalServerError)
 			return
