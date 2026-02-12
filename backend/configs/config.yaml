@@ -43,12 +43,7 @@ targets:
     interval: "60s"
     timeout: "10s"
     expected_status: 200
-  - name : "Test shop"
-    url : "https://caring-accurately-kodiak.ngrok-free.app"
-    method: "GET"
-    interval: "60s"
-    timeout: "10s"
-    expected_status: 200
+  
 
   
 
