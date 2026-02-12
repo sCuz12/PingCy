@@ -4,6 +4,7 @@ import (
 	"context"
 	"cy-platforms-status-monitor/internal/snapshot"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -46,9 +47,15 @@ func Aggregator(ctx context.Context, resCh <-chan CheckResult, eventsCh chan<- E
 			
 			prevUp := st.LastUp
 			
+			if st.Name == "Test shop" {
+				fmt.Println(st.LastUp)
+				fmt.Println(res.Up)
+			}
+
 			updateState(st, res)
 			
-			if st.TotalChecks > 1 && prevUp != res.Up {
+			if prevUp != res.Up {
+				fmt.Printf("Incident Found for Target: %s", st.Name)
 				event := Event{
 					TargetName: res.TargetName,
 					URL:        res.URL,
