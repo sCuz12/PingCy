@@ -24,3 +24,5 @@ web/**/*.njsproj
 web/**/*.sln
 web/**/*.sw?
 fly.toml
+
+backend/.env
