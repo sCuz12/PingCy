@@ -8,3 +8,9 @@ create table check_results (
     error text,
     probe text not null default 'primary'
 );
+
+create index idx_check_results_target_time
+on check_results (target_name, checked_at desc);
+
+create index idx_check_results_time
+on check_results (checked_at desc);

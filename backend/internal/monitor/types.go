@@ -66,11 +66,10 @@ type State struct {
 type Event struct {
 	TargetName string
 	URL        string
-
 	From bool
 	To   bool
-
 	At     time.Time
 	Reason string // error/validation/status explanation
+	StatusCode int 
 }
 

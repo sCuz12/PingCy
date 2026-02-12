@@ -16,8 +16,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
@@ -81,12 +81,7 @@ func main() {
 
 	go monitor.Aggregator(ctx, resultsCh, eventsCh, dbpool)
 
-	go func() {
-		for e := range eventsCh {
-			fmt.Println("EVENT")
-			fmt.Println(e.TargetName, e.From, e.To)
-		}
-	}()
+	go monitor.IncidentCollector(ctx, eventsCh,dbpool)
 
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
