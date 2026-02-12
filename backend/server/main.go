@@ -11,11 +11,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-telegram/bot"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -54,8 +56,26 @@ func main() {
 	}
 
 	cfg, err := config.Load(CONFIGS_PATH)
+
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	chatIDStr := os.Getenv("TELEGRAM_CHAT_ID") 
+	if token == "" || chatIDStr == "" {
+		log.Fatal("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars are required")
+	}
+
+	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+
+	if err != nil {
+		log.Fatalf("invalid TELEGRAM_CHAT_ID: %v", err)
+	}
+
+	b, err := bot.New(token)
+	if err != nil {
+		log.Fatalf("failed to initialize Telegram bot: %v", err)
 	}
 
 	// Root context for the whole app
@@ -81,7 +101,7 @@ func main() {
 
 	go monitor.Aggregator(ctx, resultsCh, eventsCh, dbpool)
 
-	go monitor.IncidentCollector(ctx, eventsCh,dbpool)
+	go monitor.IncidentCollector(ctx, eventsCh, dbpool, b, chatID)
 
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

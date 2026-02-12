@@ -2,9 +2,11 @@ package monitor
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/go-telegram/bot"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -12,7 +14,7 @@ import (
 // IncidentCollector listens to events and records incident lifecycles in the DB.
 // An incident starts when a target transitions from UP->DOWN (or TIMEOUT), and
 // ends when it returns to UP. Only one open incident per (target, probe) exists.
-func IncidentCollector(ctx context.Context, eventsCh <-chan Event, dbpool *pgxpool.Pool) {
+func IncidentCollector(ctx context.Context, eventsCh <-chan Event, dbpool *pgxpool.Pool, tbot *bot.Bot, chatID int64) {
 	go func() {
 		for e := range eventsCh {
 			if dbpool == nil {
@@ -21,8 +23,66 @@ func IncidentCollector(ctx context.Context, eventsCh <-chan Event, dbpool *pgxpo
 			if err := persistIncident(ctx, dbpool, e); err != nil {
 				log.Printf("incident persist failed for %s: %v", e.TargetName, err)
 			}
+
+			if tbot != nil {
+				var msg string
+				if !e.To {
+					msg = formatTelegramDownMessage(e)
+				} else {
+					msg = formatTelegramUpMessage(e)
+				}
+
+				if _, err := tbot.SendMessage(ctx, &bot.SendMessageParams{
+					ChatID: chatID,
+					Text:   msg,
+				}); err != nil {
+					log.Printf("telegram send failed for %s: %v", e.TargetName, err)
+				}
+			}
 		}
 	}()
+}
+
+func formatTelegramDownMessage(ev Event) string {
+	statusLine := "Status: "
+	switch {
+	case ev.StatusCode == 0 && ev.Reason != "":
+		statusLine += fmt.Sprintf("TIMEOUT (%s)", ev.Reason)
+	case ev.StatusCode == 0:
+		statusLine += "TIMEOUT"
+	case ev.StatusCode >= 500:
+		statusLine += fmt.Sprintf("HTTP %d (server error)", ev.StatusCode)
+	default:
+		statusLine += fmt.Sprintf("HTTP %d", ev.StatusCode)
+	}
+
+	if ev.Reason != "" && ev.StatusCode != 0 {
+		statusLine += fmt.Sprintf(" — %s", ev.Reason)
+	}
+
+	return fmt.Sprintf("🚨 DOWN: %s\n%s\nProbe: primary\nAt: %s",
+		ev.TargetName,
+		statusLine,
+		ev.At.UTC().Format("2006-01-02 15:04 MST"),
+	)
+}
+
+func formatTelegramUpMessage(ev Event) string {
+	statusLine := "Status: "
+	if ev.StatusCode == 0 {
+		statusLine += "UP"
+	} else {
+		statusLine += fmt.Sprintf("HTTP %d", ev.StatusCode)
+		if ev.Reason != "" {
+			statusLine += fmt.Sprintf(" — %s", ev.Reason)
+		}
+	}
+
+	return fmt.Sprintf("✅ UP: %s\n%s\nProbe: primary\nAt: %s",
+		ev.TargetName,
+		statusLine,
+		ev.At.UTC().Format("2006-01-02 15:04 MST"),
+	)
 }
 
 // persistIncident upserts incidents table according to transition events.
@@ -57,7 +117,7 @@ func persistIncident(ctx context.Context, db *pgxpool.Pool, ev Event) error {
          WHERE target_name = $4
            AND probe = $5
            AND ended_at IS NULL
-    `, ev.At,ev.StatusCode, ev.Reason, ev.TargetName, "primary")
+    `, ev.At, ev.StatusCode, ev.Reason, ev.TargetName, "primary")
 	return err
 }
 
