@@ -62,7 +62,7 @@ func main() {
 	}
 
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
-	chatIDStr := os.Getenv("TELEGRAM_CHAT_ID") 
+	chatIDStr := os.Getenv("TELEGRAM_CHAT_ID")
 	if token == "" || chatIDStr == "" {
 		log.Fatal("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars are required")
 	}
@@ -123,6 +123,11 @@ func main() {
 	r.Get("/uptime/all", h.GetUptimeAll)
 	// Serve Vite build output from /app/web/dist
 	fs := http.FileServer(http.Dir("./web/dist"))
+
+	// Explicit root asset so Fly/Chi won't block it
+	r.Get("/cyobserver.png", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/dist/cyobserver.png")
+	})
 
 	// Assets (Vite outputs /assets/*)
 	r.Handle("/assets/*", fs)

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import logo from "./assets/cyobserver.png";
 
 type StateDTO = {
   name: string;
@@ -185,7 +186,7 @@ export default function App() {
             <div className="flex items-center gap-3">
               {/* Cypriot “island dot” mark */}
               <img
-                src="/cyobserver.png"
+                src={logo}
                 alt="CyPing"
                 className="h-10 w-10 rounded-2xl bg-slate-900 object-cover shadow-sm"
               />
