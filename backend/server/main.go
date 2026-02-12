@@ -129,6 +129,11 @@ func main() {
 
 	// SPA fallback: serve index.html for everything else that isn't an API route
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		staticPath := "./web/dist" + r.URL.Path
+		if info, err := os.Stat(staticPath); err == nil && !info.IsDir() {
+			http.ServeFile(w, r, staticPath)
+			return
+		}
 		http.ServeFile(w, r, "./web/dist/index.html")
 	})
 
