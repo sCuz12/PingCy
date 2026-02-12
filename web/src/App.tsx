@@ -98,6 +98,7 @@ export default function App() {
   const [err, setErr] = useState<string>("");
   const [uptime, setUptime] = useState<UptimeResponse | null>(null);
   const [uptimeErr, setUptimeErr] = useState<string>("");
+  const telegramChannel = "https://t.me/+u0viVzoo9hM5ZTQ0"
 
   async function loadStatus() {
     try {
@@ -183,13 +184,14 @@ export default function App() {
           <div>
             <div className="flex items-center gap-3">
               {/* Cypriot “island dot” mark */}
-              <div className="relative h-10 w-10 rounded-2xl bg-slate-900 text-white shadow-sm">
-                <div className="absolute left-3 top-3 h-2.5 w-2.5 rounded-full bg-sky-400" />
-                <div className="absolute left-5 top-5 h-2.5 w-2.5 rounded-full bg-amber-300" />
-              </div>
+              <img
+                src="/cyobserver.png"
+                alt="CyPing"
+                className="h-10 w-10 rounded-2xl bg-slate-900 object-cover shadow-sm"
+              />
               <div>
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                  CyPing
+                  CyObserver
                 </h1>
                 <p className="text-sm text-slate-600">
                   Live status monitor for Cyprus public platforms (unofficial).
@@ -205,6 +207,16 @@ export default function App() {
             >
               Refresh
             </button>
+            {telegramChannel ? (
+              <a
+                href={telegramChannel}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 active:bg-sky-700"
+              >
+                Join Telegram (live alerts)
+              </a>
+            ) : null}
             <div className="text-xs text-slate-600">
               <div className="font-medium text-slate-700">Auto-refresh</div>
               <div>every 10s</div>
@@ -372,7 +384,7 @@ export default function App() {
         <div className="mt-8 text-xs text-slate-500">
           <div>
             <span className="font-semibold text-slate-600">Disclaimer:</span>{" "}
-            CyPing is community-run and unofficial. It monitors only publicly accessible
+            CyObserver is community-run and unofficial. It monitors only publicly accessible
             endpoints and has no access to internal systems or user data.
           </div>
         </div>
