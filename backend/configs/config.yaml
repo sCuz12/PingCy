@@ -41,9 +41,16 @@ targets:
     url : "https://www.publictransport.com.cy/"
     method: "GET"
     interval: "60s"
-    timeout: "10s"
+    timeout: "15s"
     expected_status: 200
-  
+  - name : "Tax Portal"
+    url : "https://taxportal.mof.gov.cy/"
+    method: "GET"
+    interval: "60s"
+    timeout: "15s"
+    expected_status: 200
+    
+
 
   
 
