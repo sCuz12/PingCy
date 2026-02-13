@@ -61,21 +61,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
-	chatIDStr := os.Getenv("TELEGRAM_CHAT_ID")
-	if token == "" || chatIDStr == "" {
-		log.Fatal("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars are required")
-	}
+	telegramDisabled := os.Getenv("TELEGRAM_DISABLED") == "true"
 
-	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+	var (
+		b      *bot.Bot
+		chatID int64
+	)
 
-	if err != nil {
-		log.Fatalf("invalid TELEGRAM_CHAT_ID: %v", err)
-	}
+	if telegramDisabled {
+		log.Println("TELEGRAM_DISABLED=true — skipping Telegram notifications")
+	} else {
+		token := os.Getenv("TELEGRAM_BOT_TOKEN")
+		chatIDStr := os.Getenv("TELEGRAM_CHAT_ID")
+		if token == "" || chatIDStr == "" {
+			log.Fatal("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars are required (or set TELEGRAM_DISABLED=true to skip)")
+		}
 
-	b, err := bot.New(token)
-	if err != nil {
-		log.Fatalf("failed to initialize Telegram bot: %v", err)
+		chatID, err = strconv.ParseInt(chatIDStr, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid TELEGRAM_CHAT_ID: %v", err)
+		}
+
+		b, err = bot.New(token)
+		if err != nil {
+			log.Fatalf("failed to initialize Telegram bot: %v", err)
+		}
 	}
 
 	// Root context for the whole app
