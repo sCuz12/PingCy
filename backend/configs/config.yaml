@@ -49,6 +49,12 @@ targets:
     interval: "60s"
     timeout: "15s"
     expected_status: 200
+  - name : "Social Insurance Services"
+    url : "https://sisweb.mlsi.gov.cy/"
+    method: "GET"
+    interval: "60s"
+    timeout: "15s"
+    expected_status: 200
     
 
 
