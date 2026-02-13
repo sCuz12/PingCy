@@ -43,12 +43,6 @@ targets:
     interval: "120s"
     timeout: "15s"
     expected_status: 200
-  - name : "Tax Portal"
-    url : "https://taxportal.mof.gov.cy/"
-    method: "GET"
-    interval: "120s"
-    timeout: "15s"
-    expected_status: 200
   - name : "Social Insurance Services"
     url : "https://sisweb.mlsi.gov.cy/"
     method: "GET"
