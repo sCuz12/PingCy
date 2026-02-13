@@ -32,9 +32,9 @@ func CheckOnce(ctx context.Context, client *http.Client, t Target) CheckResult {
 	}
 
 	// Optional: if we want to ensure UA even if client wrapper is removed later.
-	// if req.Header.Get("User-Agent") == "" {
-	// 	req.Header.Set("User-Agent", "CyprusStatusMonitor/0.1")
-	// }
+	if req.Header.Get("User-Agent") == "" {
+		req.Header.Set("User-Agent", "CyprusStatusMonitor/0.1")
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
